@@ -1,0 +1,8 @@
+[core]
+plugins = tftp
+plugins-dir = .
+
+[tftp]
+port = 49808
+host = localhost
+
