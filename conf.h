@@ -40,7 +40,9 @@ typedef union {
  * these will be looked for in section with matching name,
  * upon fiding the parameter, handler will be called with
  * value passed in union, and the configuration element as first 
- * parameter.
+ * parameter. The value passed needs to be copied in handler (ex. strings
+ * need to be copied with strdup) as after parsing all data belongign 
+ * to this group will be freed.
  * The list of configuration elements shall end with one empty element
  * that is all fields are 0
  */
@@ -108,9 +110,10 @@ struct conf_group_s * conf_create_section(struct conf_s * c, char * name);
 struct conf_value_s * conf_create_value(struct conf_group_s * c, char * name);
 
 /**
- * @brief store string value in config element
+ * @brief store string value in config element, if a string is already exists,
+ * the new value will be added to the old one
  */
-void conf_value_set_str(struct conf_value_s * c, const char * strval);
+void conf_value_add_str(struct conf_value_s * c, const char * strval);
  
 /**
  * @brief store int value in config element

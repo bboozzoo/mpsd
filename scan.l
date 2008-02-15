@@ -66,9 +66,9 @@ EQUALS      =
                     last_value = conf_create_value(last_section, yytext);
                 } else {
                     DBG(2, "value: %s\n", yytext);
-                    conf_value_set_str(last_value, yytext);
+                    conf_value_add_str(last_value, yytext);
                     DBG(1, "   %s -> %s\n", last_value->name, last_value->value.str_val);
-                    last_value = NULL;
+                    /*last_value = NULL; */
                 }
             }
 

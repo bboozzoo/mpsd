@@ -1,8 +1,8 @@
+#include <string.h>
+#include <stdlib.h>
 #include "conf.h"
 #include "debug.h"
 #include "scan.h"
-#include <stdlib.h>
-#include <string.h>
 
 int conf_load(struct conf_s * c) {
     DBG(1, "loading config\n");
@@ -69,13 +69,25 @@ struct conf_value_s * conf_create_value(struct conf_group_s * c, char * name) {
     return val;
 }
 
-void conf_value_set_str(struct conf_value_s * c, const char * strval) {
+void conf_value_add_str(struct conf_value_s * c, const char * strval) {
     if (NULL == c || NULL == strval)
         return;
     
-    if (NULL != c->value.str_val)
-        DBG(1, "value already set!\n");
-    else
+    if (NULL != c->value.str_val) {
+        /* concatenate values */
+        unsigned int reqspace = strlen(c->value.str_val);
+        reqspace += 1; /* for ' ' */
+        reqspace += strlen(c->value.str_val);
+        reqspace += 1; /* for \0 */
+        DBG(2, "new size: %d\n", reqspace);
+        /* get mem */
+        c->value.str_val = realloc(c->value.str_val, reqspace);
+        if (NULL != c->value.str_val) {
+            strcat(c->value.str_val, " ");
+            strcat(c->value.str_val, strval);
+            DBG(1, "new value: \'%s\'\n", c->value.str_val);
+        }
+    } else
         c->value.str_val = strdup(strval);
 
     if (NULL == c->value.str_val) 
@@ -89,6 +101,10 @@ void conf_value_set_int(struct conf_value_s * c, int intval) {
     c->value.int_val = intval;
 }
 
+/*
+ * after a certain group has been identified and values have been passed
+ * to the handler, all data will be freed
+ */
 int conf_register(struct conf_s * conf, struct conf_desc_s * cdesc, void * data) {
     struct list_head_s * iter = NULL;
     struct conf_group_s * grp = NULL;
@@ -125,7 +141,14 @@ int conf_register(struct conf_s * conf, struct conf_desc_s * cdesc, void * data)
                     cdesc->handler(el, val->value, data);
                 }
             }
+            struct list_head_s * i = iter;
+            iter = iter->prev;
+            list_del(i);
+            free(val);
         }
+        /* release group info */
+        list_del(&grp->groups_list);
+        free(grp);
     }
     return 0;
 }

@@ -6,10 +6,11 @@ TARG_SRCS = main.c \
 			debug.c \
 			$(LEX_SRCS:.l=-lex.c)
 TARGET = mpsd
-CFLAGS = -std=c99
+CFLAGS = -DCORE_LOAD_STATIC -pg -g3 -ggdb -std=c99
+LDFLAGS = -pg
 
 $(TARGET): $(TARG_SRCS:.c=.o)
-	$(CC) -o $@ $^ $(LIBS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 %.o: %.c
 	$(CC) -c -o $@ $^ $(CFLAGS) 

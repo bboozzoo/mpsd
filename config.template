@@ -1,6 +1,6 @@
 [core]
-plugins = tftp
-plugins-dir = .
+modules = tftp http
+modules-dir = .
 
 [tftp]
 port = 49808

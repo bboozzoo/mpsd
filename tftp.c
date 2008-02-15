@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include "tftp.h"
 #include "conf.h"
+#include "debug.h"
 
 typedef enum {
     ID_PORT,
@@ -19,4 +20,11 @@ static struct conf_desc_s tftp_conf = {
     .handler = NULL
 };
 
+void tftp_init(void) {
+    DBG(1, "tftp init\n");
+}
+
+void tftp_finalize(void) {
+    DBG(1, "tftp finalize\n");
+}
 
