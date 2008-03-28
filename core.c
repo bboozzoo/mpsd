@@ -1,7 +1,11 @@
+#include "config.h"
 #include "core.h"
 #include "conf.h"
 #include "debug.h"
+#include "module.h"
+#include "list.h"
 #include <stdlib.h>
+#include <string.h>
 
 #if defined(CORE_LOAD_STATIC)
 #include "core_static.h"
@@ -13,6 +17,8 @@
 struct core_s {
     char * modules_dir;
     char * modules;
+    struct list_head_s modules_list;
+    struct conf_s * conf;
 };
 
 /* IDs, local only */
@@ -24,10 +30,14 @@ typedef enum {
 /* local functions */
 static int core_handler(struct conf_element_s * s, conf_value_t val, void * data);
 static int core_load_modules(struct core_s * core);
+static void core_unload_modules(struct core_s * core);
+static int core_register_module(struct core_s * core, struct module_s * mod);
 #if defined(CORE_LOAD_DYNAMIC)
 static int __core_load_module_dynamic(struct core_s * core, const char * mod);
+static void __core_unload_module_dynamic(struct core_s * core, struct module_s * mod); 
 #elif defined (CORE_LOAD_STATIC)
 static int __core_load_module_static(struct core_s * core, const char * mod);
+static void __core_unload_module_static(struct core_s * core, struct module_s * mod);
 #endif
 /* local data */
 
@@ -76,7 +86,9 @@ int core_init(struct conf_s * conf) {
     core_ctx = calloc(1, sizeof(struct core_s));
     if (NULL == core_ctx)
         return -1;
-
+    
+    list_init(&core_ctx->modules_list, NULL);
+    core_ctx->conf = conf;
     conf_register(conf, &core_conf, core_ctx);
     /* handler was called */
     if (NULL == core_ctx->modules || NULL == core_ctx->modules_dir) {
@@ -92,6 +104,7 @@ void core_deinit(struct conf_s * conf) {
    if (NULL == core_ctx)
        return;
 
+   core_unload_modules(core_ctx);
    if (NULL != core_ctx->modules)
        free(core_ctx->modules);
    if (NULL != core_ctx->modules_dir)
@@ -126,8 +139,12 @@ static int core_load_modules(struct core_s * core) {
 
 #if defined(CORE_LOAD_DYNAMIC)
 static int __core_load_module_dynamic(struct core_s * core, const char * modname) {
+    return 0;
+}
+static void __core_unload_module_dynamic(struct core_s * core, struct module_s * mod) {
 
 }
+
 #elif defined (CORE_LOAD_STATIC)
 static int __core_load_module_static(struct core_s * core, const char * modname) {
     struct core_mod_static_s * mod = &mods;
@@ -135,13 +152,40 @@ static int __core_load_module_static(struct core_s * core, const char * modname)
     while (NULL != mod->name) {
         if (0 == strcmp(mod->name, modname)) {
             struct module_s * m = &mod->mod;
+            list_init(&m->mod_entry, m);
             DBG(1, "loading module: %s\n", mod->name); 
-            m->init();
+            core_register_module(core, m);
+            m->init(core->conf);
             break;
         }
         mod++;
     }
     return ret;
 }
+
+static void __core_unload_module_static(struct core_s * core, struct module_s * mod) {
+        mod->finalize();
+}
 #endif
+
+static int core_register_module(struct core_s * core, struct module_s * mod) {
+    list_add(&core->modules_list, &mod->mod_entry);
+    return 0;
+}
+
+int core_register_protocol(struct protocol_s * proto) {
+    return 0;
+}
+
+static void core_unload_modules(struct core_s * core) {
+    struct list_head_s * it;
+    DBG(1, "unloading modules\n");
+    list_for(&core->modules_list, it) {
+        struct module_s * mod = LIST_DATA(it, struct module_s);
+        struct list_head_s * ldel = it;
+        it = it->prev;
+        list_del(ldel);
+        __core_unload_module_static(core, mod);
+    }
+}
 

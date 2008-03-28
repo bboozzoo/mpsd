@@ -62,10 +62,11 @@ int main(int argc, char * argv[]) {
 
     dbg_init(dest, level, verbose);  
 
-    DBG(1, "uftpd startup\n");
+    DBG(1, "mpsd startup\n");
     conf_load(&conf); 
     core_init(&conf);
-    DBG(1, "uftpd closing\n");
+    core_deinit(&conf);
+    DBG(1, "mpsd closing\n");
     return 0;
 }
 
