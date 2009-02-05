@@ -108,6 +108,7 @@ void conf_value_set_int(struct conf_value_s * c, int intval) {
 int conf_register(struct conf_s * conf, struct conf_desc_s * cdesc, void * data) {
     struct list_head_s * iter = NULL;
     struct conf_group_s * grp = NULL;
+    struct conf_element_s * el = NULL;
 
     if (NULL == conf || NULL == cdesc || 
         NULL == cdesc->name || NULL == cdesc->conf ||
@@ -117,8 +118,8 @@ int conf_register(struct conf_s * conf, struct conf_desc_s * cdesc, void * data)
     }
     
     DBG(1,"[%s]\n", cdesc->name);
-    for (struct conf_element_s * e = cdesc->conf; e->name != NULL; e++)
-        DBG(1, "   -> %s\n", e->name);
+    for (el = cdesc->conf; el->name != NULL; el++)
+        DBG(1, "   -> %s\n", el->name);
 
     list_for(&conf->groups, iter) {
         grp = LIST_DATA(iter, struct conf_group_s);
@@ -133,12 +134,14 @@ int conf_register(struct conf_s * conf, struct conf_desc_s * cdesc, void * data)
     if (NULL != grp) {
         /* now call handler for each value that is found */
         list_for(&grp->values, iter) {
+            struct conf_element_s * e = NULL;
             struct conf_value_s * val = LIST_DATA(iter, struct conf_value_s);
+
             DBG(1, "checking value: %s\n", val->name);
-            for (struct conf_element_s * el = cdesc->conf; el->name != NULL; el++) {
+            for (e = cdesc->conf; e->name != NULL; e++) {
                 DBG(1, "++checking value: %s\n", val->name);
-                if (0 == strcmp(el->name, val->name)) {
-                    cdesc->handler(el, val->value, data);
+                if (0 == strcmp(e->name, val->name)) {
+                    cdesc->handler(e, val->value, data);
                 }
             }
             struct list_head_s * i = iter;
