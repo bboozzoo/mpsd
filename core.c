@@ -1,4 +1,4 @@
-#include "config.h"
+/*#include "config.h"*/
 #include "core.h"
 #include "conf.h"
 #include "debug.h"
