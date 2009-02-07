@@ -7,10 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(CORE_LOAD_STATIC)
-#include "core_static.h"
-#elif defined(CORE_LOAD_DYNAMIC)
+#ifdef CORE_LOAD_DYNAMIC
 #include <dlfcn.h>
+#else /* CORE_LOAD_STATIC */
+#include "core_static.h"
 #endif 
 
 /* local types */
@@ -32,10 +32,10 @@ static int core_handler(struct conf_element_s * s, conf_value_t val, void * data
 static int core_load_modules(struct core_s * core);
 static void core_unload_modules(struct core_s * core);
 static int core_register_module(struct core_s * core, struct module_s * mod);
-#if defined(CORE_LOAD_DYNAMIC)
+#ifdef CORE_LOAD_DYNAMIC
 static int __core_load_module_dynamic(struct core_s * core, const char * mod);
 static void __core_unload_module_dynamic(struct core_s * core, struct module_s * mod); 
-#elif defined (CORE_LOAD_STATIC)
+#else /* CORE_LOAD_STATIC */
 static int __core_load_module_static(struct core_s * core, const char * mod);
 static void __core_unload_module_static(struct core_s * core, struct module_s * mod);
 #endif
@@ -124,7 +124,7 @@ static int core_load_modules(struct core_s * core) {
             DBG(1, "module: %s\n", ostr);
 #if defined(CORE_LOAD_DYNAMIC)
             val = __core_load_module_dynamic(ostr);
-#elif defined(CORE_LOAD_STATIC)
+#else
             val = __core_load_module_static(core, ostr);
 #endif            
             if (0 != val)
@@ -145,7 +145,7 @@ static void __core_unload_module_dynamic(struct core_s * core, struct module_s *
 
 }
 
-#elif defined (CORE_LOAD_STATIC)
+#else /* CORE_LOAD_STATIC */
 static int __core_load_module_static(struct core_s * core, const char * modname) {
     struct core_mod_static_s * mod = &mods;
     int ret = 0;
