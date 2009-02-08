@@ -1,5 +1,5 @@
 [core]
-modules = tftp  http
+modules = tftp
 modules-dir = .
 
 [tftp]

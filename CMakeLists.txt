@@ -10,6 +10,7 @@ set(mpsd_SRCS
    core.c
    debug.c
    module.c
+   conn.c
 )
 add_flex_files(mpsd_SRCS scan.l)
 # options

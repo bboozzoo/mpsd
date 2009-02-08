@@ -116,10 +116,10 @@ void core_deinit(struct conf_s * conf) {
 }
 
 static int core_load_modules(struct core_s * core) {
-    DBG(2, "loading modules\n");
     int ret = 0;
     char * strstate = NULL;
     char * ostr = core->modules;
+    DBG(2, "will load modules: %s\n", core->modules);
     ostr = strtok_r(ostr, " ", &strstate);
     if (NULL != ostr) {
         do {
@@ -152,6 +152,7 @@ static void __core_unload_module_dynamic(struct core_s * core, struct module_s *
 static int __core_load_module_static(struct core_s * core, const char * modname) {
     struct core_mod_static_s * mod = __static_mods;
     int ret = 0;
+    DBG(1, "try to load module: %s (%p)\n", modname, mod);
     while (NULL != mod->name) {
         if (0 == strcmp(mod->name, modname)) {
             struct module_s * m = &mod->mod;
