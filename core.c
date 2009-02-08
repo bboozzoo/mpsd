@@ -62,9 +62,10 @@ static struct core_s * core_ctx = NULL;
  * @brief handler for core related config calls 
  */
 static int core_handler(struct conf_element_s * s, conf_value_t val, void * data) {
-    int ret_val = 0;
+    int ret_val = RET_OK;
     struct core_s * core_c = (struct core_s *) data;
-    
+   
+    DBG(1, "core conf handler\n");
     if (NULL == data)
         return -1;
 
@@ -147,7 +148,7 @@ static void __core_unload_module_dynamic(struct core_s * core, struct module_s *
 
 #else /* CORE_LOAD_STATIC */
 static int __core_load_module_static(struct core_s * core, const char * modname) {
-    struct core_mod_static_s * mod = &mods;
+    struct core_mod_static_s * mod = __static_mods;
     int ret = 0;
     while (NULL != mod->name) {
         if (0 == strcmp(mod->name, modname)) {

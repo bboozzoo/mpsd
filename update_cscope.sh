@@ -3,5 +3,5 @@ if [ "$1" = "clean" ]; then
     exit 0
 fi
 
-find . -type f | grep -v git | grep -v cscope > cscope.files
+find . -type f | grep -v git | grep -v ~$ | grep -v cscope > cscope.files
 cscope -buvk

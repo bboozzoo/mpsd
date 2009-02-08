@@ -22,9 +22,9 @@ int main(int argc, char * argv[]) {
             break;
         switch (optchar) {
             case 'c':
-              conf.source = fopen(optarg, "r");
+              conf.source = strdup(optarg); 
               if (NULL == conf.source) 
-                  fprintf(stderr, "failed to open config file: %s\n", optarg);
+                  fprintf(stderr, "cannot open config file: %s\n", optarg);
               break;
             case 'v':
               verbose = 1;
@@ -63,10 +63,12 @@ int main(int argc, char * argv[]) {
     dbg_init(dest, level, verbose);  
 
     DBG(1, "mpsd startup\n");
-    conf_load(&conf); 
-    core_init(&conf);
-    core_deinit(&conf);
-    DBG(1, "mpsd closing\n");
+    if (RET_OK == conf_load(&conf)) {
+        core_init(&conf);
+        core_deinit(&conf);
+        DBG(1, "mpsd closing\n");
+    }
+    conf_unload(&conf);
     return 0;
 }
 

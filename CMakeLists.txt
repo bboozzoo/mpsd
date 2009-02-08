@@ -20,11 +20,16 @@ option(MODULE_TFTP
     "Support TFTP"
     OFF)
 # 
+if (NOT DYNAMIC_PLUGINS)
+    set(mpsd_SRCS ${mpsd_SRCS} core_static.c)
+endif (NOT DYNAMIC_PLUGINS)
+
 if (MODULE_TFTP)
     set(mpsd_SRCS ${mpsd_SRCS} tftp.c)
 endif (MODULE_TFTP)
 #
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_executable(mpsd ${mpsd_SRCS})
 #target_link_libraries(mpsd)
 install(TARGETS mpsd DESTINATION bin)

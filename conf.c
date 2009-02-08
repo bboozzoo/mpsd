@@ -1,19 +1,32 @@
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "conf.h"
 #include "debug.h"
 #include "scan.h"
 
 int conf_load(struct conf_s * c) {
     DBG(1, "loading config\n");
-    list_init(&c->groups, NULL);
-    return lexscan(c);
+    if (c->source != NULL) {
+        FILE * conf_file = fopen(c->source, "r");
+        if (conf_file != NULL) {
+            list_init(&c->groups, NULL);
+            lexscan(c, conf_file);
+            fclose(conf_file);
+            return RET_OK;
+        } else {
+            DBG(1, "error loading config file: %s\n", strerror(errno));
+        }
+    } 
+    return RET_ERR;
 }
 
 int conf_unload(struct conf_s * c) {
+    DBG(1, "config cleaning up\n");
     if (NULL == c)
         return -1;
-
+    if (c->source != NULL)
+        free(c->source);
     return 0;
 }
 
@@ -136,6 +149,7 @@ int conf_register(struct conf_s * conf, struct conf_desc_s * cdesc, void * data)
         list_for(&grp->values, iter) {
             struct conf_element_s * e = NULL;
             struct conf_value_s * val = LIST_DATA(iter, struct conf_value_s);
+            struct list_head_s * tmp;
 
             DBG(1, "checking value: %s\n", val->name);
             for (e = cdesc->conf; e->name != NULL; e++) {
@@ -144,9 +158,9 @@ int conf_register(struct conf_s * conf, struct conf_desc_s * cdesc, void * data)
                     cdesc->handler(e, val->value, data);
                 }
             }
-            struct list_head_s * i = iter;
+            tmp = iter;
             iter = iter->prev;
-            list_del(i);
+            list_del(tmp);
             free(val);
         }
         /* release group info */

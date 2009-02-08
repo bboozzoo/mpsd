@@ -1,19 +1,19 @@
 #ifndef __CORE_STATIC_H__
 #define __CORE_STATIC_H__
+
+#include "config.h"
+
+#ifdef DYNAMIC_PLUGINS
+#error this file should not be included when dynamic plugins are enabled
+#endif 
+
 #include "module.h"
-#include "tftp.h"
-/*#include "config.h"*/
 
 struct core_mod_static_s {
     char * name;
     struct module_s mod;
 };
 
-static struct core_mod_static_s mods[] = {
-#ifdef MODULE_TFTP 
-    { "tftp", {tftp_init, tftp_finalize}},
-#endif
-    {NULL, {NULL, NULL}}
-};
+extern struct core_mod_static_s __static_mods[];
 
 #endif /* __CORE_STATIC_H__ */

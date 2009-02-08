@@ -80,7 +80,7 @@ struct conf_value_s {
  * wrapper for configuration
  */
 struct conf_s {
-    FILE * source;
+    char * source;
     struct list_head_s groups;
 };
 #define INIT_CONF_S {NULL}

@@ -1,0 +1,8 @@
+[core]
+modules = tftp
+modules-dir = .
+
+[tftp]
+port = 49808
+host = localhost
+
