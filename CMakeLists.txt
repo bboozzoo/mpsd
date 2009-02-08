@@ -19,6 +19,9 @@ option(DYNAMIC_PLUGINS
 option(MODULE_TFTP
     "Support TFTP"
     OFF)
+option(ENABLE_DEBUG_SYMBOLS
+    "Enable debugging symbols"
+    ON)
 # 
 if (NOT DYNAMIC_PLUGINS)
     set(mpsd_SRCS ${mpsd_SRCS} core_static.c)
@@ -27,6 +30,10 @@ endif (NOT DYNAMIC_PLUGINS)
 if (MODULE_TFTP)
     set(mpsd_SRCS ${mpsd_SRCS} tftp.c)
 endif (MODULE_TFTP)
+
+if (ENABLE_DEBUG_SYMBOLS)
+    set(CMAKE_BUILD_TYPE DEBUG)
+endif(ENABLE_DEBUG_SYMBOLS)
 #
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
