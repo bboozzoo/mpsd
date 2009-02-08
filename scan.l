@@ -97,6 +97,8 @@ int yywrap() {
 int lexscan(struct conf_s * c, FILE * src) {
     conf = c;
     yyin = src;
-    return yylex();
+    yylex();
+    yylex_destroy();
+    return 0;
 }
 

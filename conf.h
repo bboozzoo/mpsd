@@ -72,6 +72,8 @@ struct conf_value_s {
     struct conf_element_s * elem;   /**< @brief reference to conf. element if
                                       matching happens to be found during plugin registration */
     conf_value_t value;
+    conf_element_type_t detected_type; /**< @brief type of element that was determined
+                                         during parsing */
     struct list_head_s values_list;
 };
 
@@ -97,6 +99,13 @@ int conf_load(struct conf_s * c);
  * @return none
  */
 int conf_unload(struct conf_s * c);
+
+/**
+ * @brief release unnecessary data that could have been allocated
+ * and is not needed anymore; should be called only after each module has
+ * gone through the configuration
+ */
+void conf_release_left(struct conf_s * c);
 
 /**
  * @brief create config section with given section

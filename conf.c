@@ -23,11 +23,56 @@ int conf_load(struct conf_s * c) {
 
 int conf_unload(struct conf_s * c) {
     DBG(1, "config cleaning up\n");
+    conf_release_left(c);
     if (NULL == c)
         return -1;
     if (c->source != NULL)
         free(c->source);
     return 0;
+}
+
+void conf_free_value(struct conf_value_s * val) {
+    DBG(1, "free value: %p\n", val);
+    if (val->detected_type == CONF_TYPE_STRING) {
+        DBG(1, "\t\tstring: %s\n", val->value.str_val);
+        free(val->value.str_val);
+    } else {
+        DBG(1, "\t\tint: %d\n", val->value.int_val);
+    }
+    free(val->name);
+    free(val);
+}
+
+void conf_free_group(struct conf_group_s * group) {
+    DBG(1, "free group: %p\n", group);
+    free(group->name);
+    free(group);
+}
+
+void conf_release_left(struct conf_s * c) {
+    struct list_head_s * iter;
+    DBG(1, "release groups that are still left\n");
+    list_for(&c->groups, iter) {
+        struct conf_group_s * group = LIST_DATA(iter, struct conf_group_s);
+        struct list_head_s * value_iter;
+        struct list_head_s * tmp_grp;
+        DBG(1, "group: %s desc: %p\n", group->name, group->desc);
+        list_for(&group->values, value_iter) {
+            struct conf_value_s * val = LIST_DATA(value_iter, struct conf_value_s);
+            struct list_head_s * tmp;
+            DBG(1, "\tvalue: %s\n", val->name);
+            DBG(1, "\telem: %p\n", val->elem);
+            DBG(1, "\ttype: %s\n", (val->detected_type == CONF_TYPE_INT ) ? "int" : "string");
+            tmp = value_iter;
+            value_iter = value_iter->prev;
+            list_del(tmp);
+            conf_free_value(val);
+        }
+        tmp_grp = iter;
+        iter = iter->prev;
+        list_del(tmp_grp);
+        conf_free_group(group);
+    }
 }
 
 struct conf_group_s * conf_create_section(struct conf_s * c, char * name) {
@@ -105,12 +150,15 @@ void conf_value_add_str(struct conf_value_s * c, const char * strval) {
 
     if (NULL == c->value.str_val) 
         DBG(1, "allocation of value(str) failed\n");
+    else
+        c->detected_type = CONF_TYPE_STRING;
 }
  
 void conf_value_set_int(struct conf_value_s * c, int intval) {
     if (NULL == c)
         return;
 
+    c->detected_type = CONF_TYPE_INT; 
     c->value.int_val = intval;
 }
 
@@ -155,17 +203,21 @@ int conf_register(struct conf_s * conf, struct conf_desc_s * cdesc, void * data)
             for (e = cdesc->conf; e->name != NULL; e++) {
                 DBG(1, "++checking value: %s\n", val->name);
                 if (0 == strcmp(e->name, val->name)) {
-                    cdesc->handler(e, val->value, data);
+                    if (e->type == val->detected_type) 
+                        cdesc->handler(e, val->value, data);
+                    else {
+                        DBG(1, "warning: detected type != expected type\n");
+                    }
                 }
             }
             tmp = iter;
             iter = iter->prev;
             list_del(tmp);
-            free(val);
+            conf_free_value(val);
         }
         /* release group info */
         list_del(&grp->groups_list);
-        free(grp);
+        conf_free_group(grp);
     }
     return 0;
 }

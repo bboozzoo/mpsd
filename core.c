@@ -95,10 +95,12 @@ int core_init(struct conf_s * conf) {
     if (NULL == core_ctx->modules || NULL == core_ctx->modules_dir) {
         DBG(1, "loading core config failed\n");
         return RET_ERR;
+    } else {
+        core_load_modules(core_ctx);
     }
     
-    core_load_modules(core_ctx);
-    return 0;
+    conf_release_left(conf);
+    return ;
 }
 
 void core_deinit(struct conf_s * conf) {
