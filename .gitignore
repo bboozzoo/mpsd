@@ -1,1 +1,6 @@
 scan.c
+*~
+*.[oa]
+cscope.*
+
+

@@ -1,0 +1,9 @@
+Cmake is required for building this software.
+Instead of 'traditional' ./configure && make && make install do:
+1. ccmake .
+2. pick your config
+3. press c [configure]
+4. press g [generate]
+5. make
+6. make install
+7. enjoy

@@ -8,7 +8,7 @@
 #include <getopt.h>
 
 /* local functions */
-void show_help(const char * progname);
+static void show_help(const char * progname);
 /* local data */
 static struct conf_s conf = INIT_CONF_S;
 
